@@ -1,0 +1,21 @@
+dataset:
+  raw_wsi_dir: "C:/Users/Shiny/.gemini/antigravity/scratch/dataset/raw_wsi"
+  annotations_dir: "C:/Users/Shiny/.gemini/antigravity/scratch/dataset/lesion_annotations"
+  stage_labels_csv: "C:/Users/Shiny/.gemini/antigravity/scratch/dataset/stage_labels.csv"
+  output_dir: "C:/Users/Shiny/.gemini/antigravity/scratch/pN_Stage_Classification/output"
+
+preprocessing:
+  patch_size: 224
+  target_magnification: 20  # 20x (Level 0 or Level 1 depending on slide resolution)
+  tissue_threshold: 0.15     # Minimum saturation threshold for tissue mask
+  min_tissue_ratio: 0.50     # Keep patch only if >= 50% tissue
+  mask_downsample_level: 7   # Downsampled thumbnail level (e.g. 1500x750) for fast tissue mask
+
+stain_normalization:
+  enabled: true
+  method: "macenko"
+
+feature_extraction:
+  encoder: "resnet50"        # Baseline encoder (or ctranspath if weights provided)
+  batch_size: 64
+  use_amp: true              # Half-precision for RTX 4050 6GB VRAM
