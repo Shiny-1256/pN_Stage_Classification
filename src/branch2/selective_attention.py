@@ -54,9 +54,9 @@ class SelectiveNeighborhoodAttention(nn.Module):
         self.w_x = nn.Linear(feature_dim, feature_dim, bias=False)
 
         # --- Step 4: Patch Classification Network ---
-        # MLP -> BN -> ReLU -> Pooling -> MLP -> Softmax
+        # MLP -> LayerNorm -> ReLU -> Pooling -> MLP -> Softmax
         self.mlp1 = nn.Linear(feature_dim, 512)
-        self.bn1 = nn.BatchNorm1d(512)
+        self.norm1 = nn.LayerNorm(512)
         self.mlp2 = nn.Sequential(
             nn.Linear(512, 128),
             nn.ReLU(inplace=True),
@@ -138,14 +138,13 @@ class SelectiveNeighborhoodAttention(nn.Module):
         R = F.relu(self.w_x(beta_x))  # (B, 5, 1024)
 
         # --- Step 4: Patch Classification Head ---
-        # MLP -> BN -> ReLU
+        # MLP -> LayerNorm -> ReLU
         flat_r = self.mlp1(R)  # (B, 5, 512)
-        # Reshape for BatchNorm1d: (B, 512, 5)
-        flat_r = self.bn1(flat_r.transpose(1, 2))
+        flat_r = self.norm1(flat_r)
         flat_r = F.relu(flat_r)
 
-        # Consolidate 5 tokens via pooling -> (B, 512)
-        pooled = torch.mean(flat_r, dim=-1)
+        # Consolidate 5 tokens via pooling across token dimension -> (B, 512)
+        pooled = torch.mean(flat_r, dim=1)
 
         # Another MLP -> Logits & Softmax -> (B, 2)
         logits = self.mlp2(pooled)

@@ -43,6 +43,7 @@ class TumorMapperAndStagingEvaluator:
         wsi_width: int,
         wsi_height: int,
         downsample_factor: int = 16,
+        threshold: float = 0.5,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Projects patch predictions back onto the 2D spatial coordinates of the WSI.
@@ -53,6 +54,7 @@ class TumorMapperAndStagingEvaluator:
             wsi_width: Width of WSI at Level 0.
             wsi_height: Height of WSI at Level 0.
             downsample_factor: Downsample scale for the output tumor map.
+            threshold: Probability cutoff to consider a patch positive for tumor.
             
         Returns:
             binary_map: (H_map, W_map) binary mask (uint8)
@@ -74,7 +76,7 @@ class TumorMapperAndStagingEvaluator:
             my = int(round(y / downsample_factor))
 
             score = float(predictions[i])
-            is_tumor = int(score >= 0.5)
+            is_tumor = int(score >= threshold)
 
             y1, y2 = my, min(my + patch_h_map, map_h)
             x1, x2 = mx, min(mx + patch_w_map, map_w)
