@@ -83,26 +83,6 @@ selected_slide = st.sidebar.selectbox(
     format_func=lambda s: f"Node {s.split('_')[-1]} ({s})",
 )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Inference Settings**")
-
-tumor_threshold = st.sidebar.slider(
-    "Patch Decision Threshold",
-    min_value=0.10,
-    max_value=0.90,
-    value=0.50,
-    step=0.05,
-    help="Probability cutoff for considering a patch positive for metastasis.",
-)
-
-resnet_weight = st.sidebar.slider(
-    "Branch 1 ResNet-50 Weight",
-    min_value=0.0,
-    max_value=1.0,
-    value=0.5,
-    step=0.05,
-    help="Weight assigned to ResNet-50 in Branch 1 ensemble (DenseNet-121 receives remainder).",
-)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
