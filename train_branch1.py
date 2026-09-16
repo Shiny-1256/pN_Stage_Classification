@@ -224,11 +224,24 @@ def main():
         print(f"  Final Ensemble Prediction: {info['predicted_stage']} (Confidence: {info['confidence'] * 100:.1f}%)")
         print(f"  Distribution: {json.dumps(info['fused_distribution'], indent=2)}")
 
-    # Save final Branch 1 predictions
+    # Save final Branch 1 predictions (merging with any existing cohort predictions)
     out_json = out_dir / "branch1_patient_predictions.json"
+    merged_results = {}
+    if out_json.exists():
+        try:
+            with open(out_json, "r") as f:
+                old_list = json.load(f)
+                for item in old_list:
+                    merged_results[item["patient_id"]] = item
+        except Exception:
+            pass
+    for item in output_results:
+        merged_results[item["patient_id"]] = item
+
+    final_list = list(merged_results.values())
     with open(out_json, "w") as f:
-        json.dump(output_results, f, indent=2)
-    print(f"\nSaved Branch 1 predictions to: {out_json}")
+        json.dump(final_list, f, indent=2)
+    print(f"\nSaved Branch 1 predictions ({len(final_list)} patients) to: {out_json}")
 
 
 if __name__ == "__main__":

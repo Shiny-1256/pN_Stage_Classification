@@ -1,7 +1,7 @@
 """
-Patch Extractor for Whole Slide Images.
+Patch Extractor for WSI
 Computes non-overlapping patch grids over valid tissue, extracts patches,
-and pairs each patch with spatial (x, y) coordinates and ground-truth tumor labels.
+and pairs each patch with spatial (x, y) coordinates and ground-truth tumor labels
 """
 
 from typing import List, Dict, Any, Tuple, Optional
@@ -13,7 +13,7 @@ from src.preprocessing.tissue_mask import TissueDetector
 
 class PatchExtractor:
     """
-    Manages grid patch coordinate sampling and patch extraction from WSIs.
+    Manages grid patch coordinate sampling and patch extraction from WSIs
     """
 
     def __init__(

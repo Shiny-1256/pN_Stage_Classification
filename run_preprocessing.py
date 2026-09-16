@@ -1,14 +1,14 @@
 """
-Main Preprocessing Runner for pN-Stage Classification Pipeline.
+Main Preprocessing Runner for pN-Stage Classification Pipeline
 Processes WSIs, extracts patches, performs stain normalization, extracts deep embeddings,
-and packages data for Branch 1, Branch 2, and Branch 3.
+and packages data for Branch 1, Branch 2, and Branch 3
 """
 
 import argparse
 import sys
 from pathlib import Path
 
-# Add project root to sys.path
+# adding project root to sys.path for module imports
 PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -37,8 +37,8 @@ def process_slide(
     save_masks: bool = True,
     max_patches: int = None,
 ):
+    # parse slide and patient id
     slide_id = slide_path.stem
-    # Identify patient name (e.g., patient_000 from patient_000_node_0)
     parts = slide_id.split("_")
     patient_id = f"{parts[0]}_{parts[1]}"
 
@@ -46,7 +46,7 @@ def process_slide(
     print(f"Processing Slide: {slide_id} (Patient: {patient_id})", flush=True)
     print(f"=======================================================", flush=True)
 
-    # Look for corresponding annotation XML
+    # looks for corresponding XML annotation file for the slide
     ann_dir = Path(config["dataset"]["annotations_dir"])
     xml_path = ann_dir / f"{slide_id}.xml"
     annotation_parser = None
@@ -56,7 +56,7 @@ def process_slide(
     else:
         print(f"  No XML lesion annotation for {slide_id} (Slide marked negative / unannotated)", flush=True)
 
-    # Open WSI
+    # WSI Reader and Mask Generation
     with WSIReader(slide_path) as reader:
         print(f"  WSI Dimensions: {reader.width} x {reader.height} | Levels: {reader.num_levels}", flush=True)
 
@@ -73,8 +73,10 @@ def process_slide(
             mask_out_dir = packager.output_dir / "tissue_masks"
             mask_out_dir.mkdir(parents=True, exist_ok=True)
             mask_path = mask_out_dir / f"{slide_id}_mask.png"
+            # scale mask to 0-255 for saving as PNG
             cv2.imwrite(str(mask_path), mask * 255)
 
+        # early exit if no tissue patches found
         if len(records) == 0:
             print("  Warning: No tissue detected on this slide!", flush=True)
             return
@@ -88,31 +90,37 @@ def process_slide(
         print("  Extracting Level 0 patch tiles...", flush=True)
         patches = []
         for r in tqdm(records, desc="Extracting & Normalizing"):
+            # extract high resoltuion 224 x 224 RGB tile directly from WSI at level 0
             patch = reader.read_region(
                 location=(r["x"], r["y"]),
                 level=0,
                 size=(extractor.patch_size, extractor.patch_size),
             )
-            # Stain Normalization
+            # Stain Normalization - projects rgb patch into a normalized color space to reduce stain variability across slides
             if config["stain_normalization"]["enabled"]:
                 patch = normalizer.normalize(patch)
             patches.append(patch)
 
         # Feature Extraction for Branch 2 & 3
         print("  Extracting deep feature representations...", flush=True)
+        # Convert RGB patches to tensor batches and through the encoder to get feature embeddings
         features = encoder.extract_features(
             patches=patches,
             batch_size=config["feature_extraction"]["batch_size"],
         )
+        # Returns a float32 NumPy array of dimensions (N,2048) for ResNet-50
         print(f"  Feature shape: {features.shape}", flush=True)
 
-        # Packaging
+        # Saves normalized patch images, coordinates, and binary labels into an HDF5 container
         print("  Exporting Branch 1 (HDF5 patches)...", flush=True)
         h5_path = packager.export_branch1(slide_id, patches, records)
 
+        # Saves embeddings, (x, y) coordinates, and labels as a PyTorch dictionary
         print("  Exporting Branch 2 (PyTorch tensors + coordinates)...", flush=True)
         pt_path = packager.export_branch2(slide_id, features, records)
 
+        # Computes quantitative tumor burden ratios and slide/patient ground truth, 
+        # appending rows to csv
         print("  Exporting Branch 3 (Slide/Patient summary metrics)...", flush=True)
         summary = packager.export_branch3_slide_summary(
             slide_id=slide_id,

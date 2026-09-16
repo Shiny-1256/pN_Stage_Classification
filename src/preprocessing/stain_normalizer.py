@@ -1,6 +1,6 @@
 """
-Stain Normalization using the Macenko method.
-Standardizes H&E slide appearances across multiple hospital scanning centers.
+Stain Normalization using the Macenko method
+Standardizes H&E slide appearances across multiple hospital scanning centers
 """
 
 from typing import Optional
@@ -10,7 +10,7 @@ import numpy as np
 class MacenkoNormalizer:
     """
     Normalizes H&E stained pathology images using optical density (OD) decomposition
-    and singular value decomposition (SVD) following the Macenko technique.
+    and singular value decomposition (SVD) following the Macenko technique
     """
 
     def __init__(
@@ -25,22 +25,18 @@ class MacenkoNormalizer:
 
         # Standard reference H&E stain vectors (Macenko default values)
         self.he_ref = np.array([
-            [0.5626, 0.2159],
-            [0.7201, 0.8012],
-            [0.4062, 0.5581],
+            [0.5626, 0.2159], # Hematoxylin reference vector
+            [0.7201, 0.8012], # Eosin reference vector 
+            [0.4062, 0.5581], # Third channel reference vector (not used in H&E)
         ])
         # Standard reference maximum concentrations (99th percentile)
         self.max_c_ref = np.array([1.9705, 1.0308])
 
     def normalize(self, img: np.ndarray) -> np.ndarray:
         """
-        Normalizes an RGB patch image.
-        
-        Args:
-            img: RGB image patch (H, W, 3) uint8.
-            
-        Returns:
-            normalized_img: RGB normalized patch (H, W, 3) uint8.
+        Normalizes an RGB patch image
+        Args: RGB image patch (H, W, 3) uint8.
+        Returns: normalized_img: RGB normalized patch (H, W, 3) uint8.
         """
         if img.ndim != 3 or img.shape[2] != 3:
             return img

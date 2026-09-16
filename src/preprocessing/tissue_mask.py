@@ -1,41 +1,35 @@
 """
-Tissue Mask Generation for WSI Preprocessing.
-Performs background removal, Otsu thresholding, and morphological filtering.
+Tissue Mask Generation for WSI Preprocessing
+Performs background removal, Otsu thresholding, and morphological filtering
 """
 
 from typing import Tuple
 import cv2
 import numpy as np
 
-
 class TissueDetector:
     """
     Detects valid tissue regions on downsampled whole slide thumbnails
-    and eliminates glass background, pen marks, and air bubbles.
+    eliminates glass background, pen marks, and air bubbles.
     """
-
     def __init__(
         self,
-        saturation_threshold: int = 15,
-        min_tissue_area_px: int = 1000,
+        saturation_threshold: int = 15, # color saturation - 0 to 255
+        min_tissue_area_px: int = 1000, # min area of island to be considered tissue
     ):
         self.saturation_threshold = saturation_threshold
         self.min_tissue_area_px = min_tissue_area_px
 
     def segment_tissue(self, thumbnail: np.ndarray) -> np.ndarray:
         """
-        Segments tissue from thumbnail image.
-        
-        Args:
-            thumbnail: RGB thumbnail numpy array (H, W, 3), dtype=uint8.
-            
-        Returns:
-            binary_mask: 2D uint8 array (H, W) where 1 indicates tissue and 0 indicates background.
+        Segments tissue from thumbnail image
+        Args: RGB thumbnail numpy array (H, W, 3), dtype=uint8.
+        Returns: binary_mask - 2D uint8 array (H, W) where 1 indicates tissue and 0 indicates background.
         """
         if thumbnail.ndim != 3 or thumbnail.shape[2] != 3:
             raise ValueError(f"Thumbnail must be RGB (H, W, 3), got shape {thumbnail.shape}")
 
-        # Convert to HSV color space
+        # RGB to HSV color space
         hsv = cv2.cvtColor(thumbnail, cv2.COLOR_RGB2HSV)
         sat = hsv[:, :, 1]
         val = hsv[:, :, 2]

@@ -21,7 +21,6 @@ st.set_page_config(
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 
-@st.cache_data
 def load_all_data():
     b1_path = PROJECT_ROOT / "output" / "branch1_predictions" / "branch1_patient_predictions.json"
     b2_path = PROJECT_ROOT / "output" / "branch2_predictions" / "branch2_patient_predictions.json"
@@ -82,7 +81,6 @@ selected_slide = st.sidebar.selectbox(
     patient_slides,
     format_func=lambda s: f"Node {s.split('_')[-1]} ({s})",
 )
-
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
@@ -218,8 +216,8 @@ with tab_b1:
     if p_b1:
         stages = ["pN0", "pN0(i+)", "pN1mi", "pN1", "pN2"]
         
-        w_res = resnet_weight
-        w_dense = 1.0 - resnet_weight
+        w_res = globals().get("resnet_weight", 0.5)
+        w_dense = 1.0 - w_res
 
         res_raw = [p_b1.get("resnet_probabilities", {}).get(s, 0.2) for s in stages]
         dense_raw = [p_b1.get("densenet_probabilities", {}).get(s, 0.2) for s in stages]
