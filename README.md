@@ -1,4 +1,4 @@
-# Automated Breast Cancer Pathological Lymph Node (pN) Staging System
+# Real-Time AI-Assited pN Stage Classification using Deep Learning and Digital Pathology
 
 An end-to-end computational pathology system for automated breast cancer pathological lymph node (pN) staging using whole-slide images (WSIs) from the CAMELYON17 challenge. The system combines deep learning ensemble modeling (Branch 1) with spatial graph-based histopathological modeling (Branch 2) following the methodology of Tauqeer et al. (Scientific Reports, 2025).
 
